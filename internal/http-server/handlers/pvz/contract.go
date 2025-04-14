@@ -6,5 +6,6 @@ import (
 )
 
 type pvzUsecase interface {
-	CreatePvz(ctx context.Context, request dto.CreatePvzRequest)
+	CreatePvz(ctx context.Context, request dto.CreatePvzRequest) (dto.PvzResponse, error)
+	GetPvzList(ctx context.Context, startDate, endDate, page, limit string) ([]dto.PVZWithReceptions, error)
 }

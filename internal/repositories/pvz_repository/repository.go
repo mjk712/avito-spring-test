@@ -2,9 +2,11 @@ package pvz_repository
 
 import (
 	"avito-spring-test/internal/models/dao"
+	"avito-spring-test/internal/models/dto"
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 type repository struct {
@@ -33,7 +35,7 @@ func (r *repository) CreatePVZ(ctx context.Context, city string) (dao.Pvz, error
 	return pvz, err
 }
 
-func (r *repository) ListPVZWithReceptions(ctx context.Context, start, end string, limit, offset int) ([]dao.Pvz, error) {
+func (r *repository) ListPVZWithReceptions(ctx context.Context, start, end time.Time, limit, offset int) ([]dto.PVZWithReceptions, error) {
 	builder := squirrel.Select("DISTINCT pvz.*").
 		From("pvz").
 		Join("receptions ON pvz.id = receptions.pvz_id").
@@ -51,7 +53,7 @@ func (r *repository) ListPVZWithReceptions(ctx context.Context, start, end strin
 		return nil, err
 	}
 
-	var result []dao.Pvz
+	var result []dto.PVZWithReceptions
 	err = r.db.SelectContext(ctx, &result, query, args...)
 	return result, err
 }

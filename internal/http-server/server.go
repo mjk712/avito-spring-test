@@ -3,9 +3,13 @@ package http_server
 import (
 	"avito-spring-test/internal/http-server/handlers/dummy_login"
 	"avito-spring-test/internal/http-server/handlers/login"
+	"avito-spring-test/internal/http-server/handlers/pvz"
 	"avito-spring-test/internal/http-server/handlers/register"
+	"avito-spring-test/internal/http-server/middleware/role_middleware"
+	"avito-spring-test/internal/repositories/pvz_repository"
 	"avito-spring-test/internal/repositories/user_repository"
 	"avito-spring-test/internal/usecases/auth_usecase"
+	"avito-spring-test/internal/usecases/pvz_usecase"
 	"context"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
@@ -32,11 +36,13 @@ func NewServer(ctx context.Context, log *slog.Logger, cfg *config.Config, storag
 		r.Post("/dummyLogin", dummy_login.New(auth_usecase.New(user_repository.New(storage)), log).DummyLogin(ctx))
 		r.Post("/register", register.New(auth_usecase.New(user_repository.New(storage)), log).Register(ctx))
 		r.Post("/login", login.New(auth_usecase.New(user_repository.New(storage)), log).Login(ctx))
+		r.With(role_middleware.RequireRole("moderator")).Post("/pvz", pvz.New(pvz_usecase.New(pvz_repository.New(storage)), log).CreatePvz(ctx))
+		r.With(role_middleware.RequireRole("moderator", "employee")).Get("/pvz", pvz.New(pvz_usecase.New(pvz_repository.New(storage)), log).GetPvzList(ctx))
 		/*
 			/dummyLogin POST pass
 			/register POST pass
 			/login POST pass
-			/pvz POST
+			/pvz POST pass
 			/pvz GET
 			/pvz/{pvzId}/close_last_reception POST
 			/pvz/{pvzId}/delete_last_product POST
